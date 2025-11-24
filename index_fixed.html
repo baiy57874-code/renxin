@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>平安夜小游戏</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <style>
+        body {
+            overflow: hidden;
+            height: 100vh;
+            background-color: #1a237e;
+            background-image: url('https://p26-doubao-search-sign.byteimg.com/labis/adb9b23749407ed6a0d943f82aa0613a~tplv-be4g95zd3a-image.jpeg?rk3s=542c0f93&x-expires=1779538892&x-signature=JdeCLO9sB%2Fyetg0%2BXIB6Q5UpNu0%3D');
+            background-size: cover;
+            background-position: center;
+            font-family: 'Inter', system-ui, sans-serif;
+        }
+        
+        .text-shadow {
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        .text-shadow-lg {
+            text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.5);
+        }
+        
+        .glass {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .snowflake {
+            position: absolute;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            user-select: none;
+            animation: snowfall var(--fall-duration) linear infinite;
+            opacity: 0;
+        }
+        
+        @keyframes snowfall {
+            0% {
+                transform: translateY(-100px) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        
+        .gift {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            user-select: none;
+            animation: bounce 2s infinite;
+            transform: translateY(0);
+            transition: transform 0.3s ease;
+        }
+        
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+        
+        .santa {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            cursor: pointer;
+            user-select: none;
+            animation: bounce 2s infinite;
+            transform: translateY(0);
+            transition: transform 0.3s ease;
+        }
+        
+        .countdown-digit {
+            display: inline-block;
+            width: 60px;
+            height: 80px;
+            margin: 0 5px;
+            background-color: #000;
+            color: #fff;
+            border-radius: 8px;
+            font-size: 2.5rem;
+            font-weight: bold;
+            text-align: center;
+            line-height: 80px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .countdown-digit::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 50%;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.3), rgba(255,255,255,0));
+            z-index: 1;
+        }
+        
+        .countdown-label {
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 5px;
+        }
+        
+        .password-animation {
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+        
+        .stage-transition {
+            animation: fadeOutIn 1.5s ease-in-out;
+        }
+        
+        @keyframes fadeOutIn {
+            0% { opacity: 1; }
+            50% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Game Container -->
+    <div id="game-container" class="relative w-full h-full">
+        <!-- Stage 1: Game -->
+        <div id="stage-1" class="absolute inset-0 flex flex-col items-center justify-center">
+            <div class="glass rounded-xl p-6 mb-8 text-center">
+                <h1 class="text-4xl md:text-5xl font-bold text-white text-shadow-lg mb-2">平安夜小游戏</h1>
+                <p class="text-xl text-white text-shadow">点击飘落的雪花和圣诞老人收集礼物！</p>
+            </div>
+            
+            <div class="glass rounded-lg p-4 flex items-center space-x-4">
+                <img src="https://p26-doubao-search-sign.byteimg.com/tos-cn-i-be4g95zd3a/912941349456838861~tplv-be4g95zd3a-image.jpeg?rk3s=542c0f93&x-expires=1779538892&x-signature=Q16xGMAFoPrQQY3mmDTycdz2muM%3D" alt="Gift" class="w-10 h-10">
+                <span id="gift-count" class="text-2xl font-bold text-white">0</span>
+                <span class="text-xl text-white">/</span>
+                <span id="gift-target" class="text-2xl font-bold text-white">5</span>
+            </div>
+            
+            <div id="game-message" class="absolute bottom-8 glass rounded-lg p-4 text-center hidden">
+                <p class="text-xl font-bold text-white">太棒了！你收集了所有礼物！</p>
+                <p class="text-lg text-white mt-2">即将进入下一阶段...</p>
+            </div>
+        </div>
+        
+        <!-- Stage 2: Password and Countdown -->
+        <div id="stage-2" class="absolute inset-0 flex flex-col items-center justify-center hidden">
+            <div class="glass rounded-xl p-8 w-full max-w-3xl">
+                <h2 class="text-3xl md:text-4xl font-bold text-white text-shadow-lg mb-8 text-center">恭喜你完成游戏！</h2>
+                
+                <div class="flex flex-col md:flex-row items-center justify-between gap-8">
+                    <!-- Password Section -->
+                    <div class="flex-1 glass rounded-lg p-6 text-center password-animation">
+                        <h3 class="text-2xl font-bold text-white text-shadow mb-4">密码</h3>
+                        <div class="text-4xl md:text-5xl font-bold text-yellow-400 text-shadow-lg">123456</div>
+                    </div>
+                    
+                    <!-- Countdown Section -->
+                    <div class="flex-1 glass rounded-lg p-6 text-center">
+                        <h3 class="text-2xl font-bold text-white text-shadow mb-6">目标时间倒计时</h3>
+                        <div id="countdown" class="flex flex-wrap justify-center">
+                            <div class="countdown-item mx-2">
+                                <div id="days" class="countdown-digit">00</div>
+                                <div class="countdown-label text-white">天</div>
+                            </div>
+                            <div class="countdown-item mx-2">
+                                <div id="hours" class="countdown-digit">00</div>
+                                <div class="countdown-label text-white">时</div>
+                            </div>
+                            <div class="countdown-item mx-2">
+                                <div id="minutes" class="countdown-digit">00</div>
+                                <div class="countdown-label text-white">分</div>
+                            </div>
+                            <div class="countdown-item mx-2">
+                                <div id="seconds" class="countdown-digit">00</div>
+                                <div class="countdown-label text-white">秒</div>
+                            </div>
+                        </div>
+                        <div class="mt-6 text-xl text-white text-shadow">
+                            <span id="target-date">2025年12月24日 22:30</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-8 text-center">
+                    <button id="restart-btn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-full text-lg transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50">
+                        <i class="fa fa-refresh mr-2"></i>重新开始游戏
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 游戏配置
+        const GAME_CONFIG = {
+            SNOWFLAKE_COUNT: 15,
+            GIFT_TARGET: 5,
+            SANTA_INTERVAL: 3000, // 毫秒
+            TARGET_DATE: new Date('2025-12-24T22:30:00')
+        };
+        
+        // 游戏状态
+        let giftCount = 0;
+        let snowflakes = [];
+        let gameInterval = null;
+        let santaInterval = null;
+        
+        // DOM元素
+        const stage1 = document.getElementById('stage-1');
+        const stage2 = document.getElementById('stage-2');
+        const giftCountElement = document.getElementById('gift-count');
+        const giftTargetElement = document.getElementById('gift-target');
+        const gameMessage = document.getElementById('game-message');
+        const restartBtn = document.getElementById('restart-btn');
+        
+        // 倒计时元素
+        const daysElement = document.getElementById('days');
+        const hoursElement = document.getElementById('hours');
+        const minutesElement = document.getElementById('minutes');
+        const secondsElement = document.getElementById('seconds');
+        const targetDateElement = document.getElementById('target-date');
+        
+        // 初始化游戏
+        function initGame() {
+            // 设置礼物目标
+            giftTargetElement.textContent = GAME_CONFIG.GIFT_TARGET;
+            
+            // 创建雪花
+            createSnowflakes();
+            
+            // 开始圣诞老人生成间隔
+            santaInterval = setInterval(spawnSanta, GAME_CONFIG.SANTA_INTERVAL);
+            
+            // 设置目标日期显示
+            targetDateElement.textContent = formatDate(GAME_CONFIG.TARGET_DATE);
+        }
+        
+        // 创建雪花
+        function createSnowflakes() {
+            // 清除现有雪花
+            snowflakes.forEach(snowflake => {
+                if (snowflake.parentNode) {
+                    snowflake.parentNode.removeChild(snowflake);
+                }
+            });
+            snowflakes = [];
+            
+            // 创建新雪花
+            for (let i = 0; i < GAME_CONFIG.SNOWFLAKE_COUNT; i++) {
+                spawnSnowflake();
+            }
+        }
+        
+        // 生成单个雪花
+        function spawnSnowflake() {
+            const snowflake = document.createElement('div');
+            snowflake.className = 'snowflake';
+            snowflake.innerHTML = '<i class="fa fa-snowflake-o"></i>';
+            
+            // 随机位置和动画持续时间
+            const left = Math.random() * 100;
+            const fallDuration = 5 + Math.random() * 15;
+            
+            snowflake.style.left = `${left}%`;
+            snowflake.style.setProperty('--fall-duration', `${fallDuration}s`);
+            
+            // 添加点击事件
+            snowflake.addEventListener('click', () => {
+                handleSnowflakeClick(snowflake);
+            });
+            
+            // 添加到DOM和游戏状态
+            document.getElementById('game-container').appendChild(snowflake);
+            snowflakes.push(snowflake);
+            
+            // 动画结束后重新开始
+            snowflake.addEventListener('animationend', () => {
+                resetSnowflake(snowflake);
+            });
+        }
+        
+        // 重置雪花位置和动画
+        function resetSnowflake(snowflake) {
+            const left = Math.random() * 100;
+            const fallDuration = 5 + Math.random() * 15;
+            
+            snowflake.style.left = `${left}%`;
+            snowflake.style.setProperty('--fall-duration', `${fallDuration}s`);
+            
+            // 触发重排以重新开始动画
+            snowflake.style.animation = 'none';
+            snowflake.offsetHeight; // 触发重排
+            snowflake.style.animation = null;
+        }
+        
+        // 处理雪花点击
+        function handleSnowflakeClick(snowflake) {
+            // 创建礼物动画
+            const gift = document.createElement('img');
+            gift.src = 'https://p26-doubao-search-sign.byteimg.com/tos-cn-i-be4g95zd3a/912941349456838861~tplv-be4g95zd3a-image.jpeg?rk3s=542c0f93&x-expires=1779538892&x-signature=Q16xGMAFoPrQQY3mmDTycdz2muM%3D';
+            gift.className = 'gift';
+            
+            // 定位在雪花位置
+            const rect = snowflake.getBoundingClientRect();
+            gift.style.left = `${rect.left + rect.width / 2 - 25}px`;
+            gift.style.top = `${rect.top + rect.height / 2 - 25}px`;
+            
+            // 添加到DOM
+            document.getElementById('game-container').appendChild(gift);
+            
+            // 动画礼物到计数器
+            setTimeout(() => {
+                const counterRect = giftCountElement.getBoundingClientRect();
+                gift.style.transition = 'all 0.5s ease-in-out';
+                gift.style.left = `${counterRect.left + counterRect.width / 2 - 25}px`;
+                gift.style.top = `${counterRect.top + counterRect.height / 2 - 25}px`;
+                gift.style.width = '30px';
+                gift.style.height = '30px';
+                
+                // 动画结束后移除礼物并更新计数
+                setTimeout(() => {
+                    if (gift.parentNode) {
+                        gift.parentNode.removeChild(gift);
+                    }
+                    updateGiftCount(1);
+                }, 500);
+            }, 100);
+            
+            // 重置雪花
+            resetSnowflake(snowflake);
+        }
+        
+        // 生成圣诞老人
+        function spawnSanta() {
+            const santa = document.createElement('img');
+            santa.src = 'https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/d49971cb682248b68bf3247c1c41417a~tplv-a9rns2rl98-image.image?rcl=202511242021152DC15E7073220B741824&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1766578906&x-signature=aHjV3RukDMoTzXHYId8eYcPBeMg%3D';
+            santa.className = 'santa';
+            
+            // 随机位置
+            const left = Math.random() * 100;
+            santa.style.left = `${left}%`;
+            santa.style.top = '-100px';
+            
+            // 添加点击事件
+            santa.addEventListener('click', () => {
+                handleSantaClick(santa);
+            });
+            
+            // 添加到DOM
+            document.getElementById('game-container').appendChild(santa);
+            
+            // 动画圣诞老人下落
+            setTimeout(() => {
+                santa.style.transition = 'top 8s linear';
+                santa.style.top = '110vh';
+                
+                // 动画结束后移除圣诞老人
+                setTimeout(() => {
+                    if (santa.parentNode) {
+                        santa.parentNode.removeChild(santa);
+                    }
+                }, 8000);
+            }, 100);
+        }
+        
+        // 处理圣诞老人点击
+        function handleSantaClick(santa) {
+            // 创建多个礼物动画
+            const giftCount = 3; // 要生成的礼物数量
+            
+            for (let i = 0; i < giftCount; i++) {
+                const gift = document.createElement('img');
+                gift.src = 'https://p26-doubao-search-sign.byteimg.com/tos-cn-i-be4g95zd3a/912941349456838861~tplv-be4g95zd3a-image.jpeg?rk3s=542c0f93&x-expires=1779538892&x-signature=Q16xGMAFoPrQQY3mmDTycdz2muM%3D';
+                gift.className = 'gift';
+                
+                // 定位在圣诞老人位置并带有偏移
+                const rect = santa.getBoundingClientRect();
+                const offsetX = (Math.random() - 0.5) * 50;
+                const offsetY = (Math.random() - 0.5) * 50;
+                
+                gift.style.left = `${rect.left + rect.width / 2 - 25 + offsetX}px`;
+                gift.style.top = `${rect.top + rect.height / 2 - 25 + offsetY}px`;
+                
+                // 添加到DOM
+                document.getElementById('game-container').appendChild(gift);
+                
+                // 动画礼物到计数器
+                setTimeout(() => {
+                    const counterRect = giftCountElement.getBoundingClientRect();
+                    gift.style.transition = 'all 0.5s ease-in-out';
+                    gift.style.left = `${counterRect.left + counterRect.width / 2 - 25}px`;
+                    gift.style.top = `${counterRect.top + counterRect.height / 2 - 25}px`;
+                    gift.style.width = '30px';
+                    gift.style.height = '30px';
+                    
+                    // 动画结束后移除礼物并更新计数
+                    setTimeout(() => {
+                        if (gift.parentNode) {
+                            gift.parentNode.removeChild(gift);
+                        }
+                        
+                        // 只为最后一个礼物更新计数，避免多次更新
+                        if (i === giftCount - 1) {
+                            updateGiftCount(giftCount);
+                        }
+                    }, 500);
+                }, 100 + i * 100);
+            }
+            
+            // 移除圣诞老人
+            if (santa.parentNode) {
+                santa.parentNode.removeChild(santa);
+            }
+        }
+        
+        // 更新礼物计数
+        function updateGiftCount(amount) {
+            giftCount += amount;
+            
+            // 上限为目标值
+            if (giftCount > GAME_CONFIG.GIFT_TARGET) {
+                giftCount = GAME_CONFIG.GIFT_TARGET;
+            }
+            
+            // 更新显示
+            giftCountElement.textContent = giftCount;
+            
+            // 检查游戏是否完成
+            if (giftCount >= GAME_CONFIG.GIFT_TARGET) {
+                completeGame();
+            }
+        }
+        
+        // 完成游戏
+        function completeGame() {
+            // 停止游戏间隔
+            clearInterval(santaInterval);
+            
+            // 显示完成消息
+            gameMessage.classList.remove('hidden');
+            
+            // 延迟后过渡到第二阶段
+            setTimeout(() => {
+                transitionToStage2();
+            }, 3000);
+        }
+        
+        // 过渡到第二阶段
+        function transitionToStage2() {
+            // 添加过渡效果
+            stage1.classList.add('stage-transition');
+            
+            // 过渡后隐藏第一阶段并显示第二阶段
+            setTimeout(() => {
+                stage1.classList.add('hidden');
+                stage2.classList.remove('hidden');
+                
+                // 开始倒计时
+                startCountdown();
+            }, 1500);
+        }
+        
+        // 开始倒计时
+        function startCountdown() {
+            // 立即更新倒计时
+            updateCountdown();
+            
+            // 每秒更新倒计时
+            setInterval(updateCountdown, 1000);
+        }
+        
+        // 更新倒计时
+        function updateCountdown() {
+            const now = new Date();
+            const timeDifference = GAME_CONFIG.TARGET_DATE - now;
+            
+            // 计算天、时、分、秒
+            const days = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((timeDifference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((timeDifference % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeDifference % (1000 * 60)) / 1000);
+            
+            // 更新显示，带前导零
+            daysElement.textContent = days.toString().padStart(2, '0');
+            hoursElement.textContent = hours.toString().padStart(2, '0');
+            minutesElement.textContent = minutes.toString().padStart(2, '0');
+            secondsElement.textContent = seconds.toString().padStart(2, '0');
+        }
+        
+        // 格式化日期
+        function formatDate(date) {
+            const year = date.getFullYear();
+            const month = (date.getMonth() + 1).toString().padStart(2, '0');
+            const day = date.getDate().toString().padStart(2, '0');
+            const hours = date.getHours().toString().padStart(2, '0');
+            const minutes = date.getMinutes().toString().padStart(2, '0');
+            
+            return `${year}年${month}月${day}日 ${hours}:${minutes}`;
+        }
+        
+        // 重新开始游戏
+        function restartGame() {
+            // 重置游戏状态
+            giftCount = 0;
+            
+            // 更新显示
+            giftCountElement.textContent = giftCount;
+            
+            // 隐藏第二阶段并显示第一阶段
+            stage2.classList.add('hidden');
+            stage1.classList.remove('hidden');
+            stage1.classList.remove('stage-transition');
+            
+            // 隐藏游戏消息
+            gameMessage.classList.add('hidden');
+            
+            // 清除所有雪花和圣诞老人
+            document.querySelectorAll('.snowflake, .santa, .gift').forEach(element => {
+                if (element.parentNode) {
+                    element.parentNode.removeChild(element);
+                }
+            });
+            
+            // 重新初始化游戏
+            initGame();
+        }
+        
+        // 添加事件监听器
+        restartBtn.addEventListener('click', restartGame);
+        
+        // 页面加载时初始化游戏
+        window.onload = initGame;
+    </script>
+</body>
+</html>
